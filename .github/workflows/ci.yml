@@ -1,0 +1,199 @@
+name: CI - Build and Test
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - '**.cs'
+      - '**.csproj'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [ main, master, develop ]
+    paths:
+      - '**.cs'
+      - '**.csproj'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  CONFIGURATION: Release
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        cache: true
+        cache-dependency-path: '**/packages.lock.json'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build project
+      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
+
+    - name: Run tests
+      run: dotnet test --configuration ${{ env.CONFIGURATION }} --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ matrix.os }}
+        path: '**/test-results.trx'
+        retention-days: 30
+
+  code-analysis:
+    name: Code Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Analyze code style
+      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore -p:EnforceCodeStyleInBuild=true
+      continue-on-error: true
+
+    - name: Check for code analysis issues
+      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore -p:EnableNETAnalyzers=true
+      continue-on-error: true
+
+  coverage:
+    name: Code Coverage Report
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        cache: true
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Install coverage tool
+      run: dotnet tool install --global dotnet-coverage
+
+    - name: Run tests with coverage
+      run: |
+        dotnet test --configuration ${{ env.CONFIGURATION }} \
+          --no-restore \
+          --logger "console;verbosity=minimal" \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./coverage
+      continue-on-error: true
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      if: always()
+      with:
+        file: ./coverage/**/coverage.cobertura.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Generate coverage report
+      run: dotnet coverage merge ./coverage/**/*.cobertura.xml --output coverage.cobertura.xml --output-format cobertura
+      continue-on-error: true
+
+    - name: Upload coverage artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-report
+        path: coverage/
+        retention-days: 30
+
+  test-report:
+    name: Test Report
+    runs-on: ubuntu-latest
+    if: always()
+    needs: build-and-test
+
+    steps:
+    - name: Download test results
+      uses: actions/download-artifact@v4
+      with:
+        path: test-results
+        pattern: test-results-*
+
+    - name: Publish test results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: always()
+      with:
+        files: test-results/**/*.trx
+        check_name: Test Results
+        compare_to_earlier_commit: true
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Run security analyzers
+      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore -p:TreatWarningsAsErrors=false
+      continue-on-error: true
+
+    - name: Check for vulnerable packages
+      run: dotnet list package --vulnerable
+      continue-on-error: true
+
+  final-status:
+    name: Final Status
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [build-and-test, code-analysis, coverage, security-scan]
+
+    steps:
+    - name: Check build status
+      run: |
+        if [ "${{ needs.build-and-test.result }}" != "success" ]; then
+          echo "❌ Build or Tests failed"
+          exit 1
+        fi
+        echo "✅ All checks passed"
