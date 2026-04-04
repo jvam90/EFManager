@@ -22,3 +22,6 @@ else
         Console.WriteLine($"ID: {usuario.Id}, Nome: {usuario.Nome}, Email: {usuario.Email}");
     }
 }
+
+context.Usuarios.RemoveRange(usuarios);
+context.SaveChanges();  
