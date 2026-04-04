@@ -229,11 +229,13 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Deploy to Railway
-      uses: nickhou/railway-action@v0.2.0
+      run: |
+        curl -L https://railway.app/install.sh | bash
+        export PATH="$HOME/.railway/bin:$PATH"
+        railway link --project ${{ secrets.RAILWAY_PROJECT_ID }}
+        railway up
       env:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-      with:
-        projectId: ${{ secrets.RAILWAY_PROJECT_ID }}
 
   final-status:
     name: Final Status
