@@ -70,20 +70,3 @@ jobs:
           See [TEST_SUMMARY.md](TEST_SUMMARY.md) for details on test coverage.
         draft: false
         prerelease: false
-
-  notify-slack:
-    name: Notify Slack
-    runs-on: ubuntu-latest
-    if: always()
-    needs: create-release
-
-    steps:
-    - name: Send Slack notification
-      if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        text: 'Release v${{ needs.create-release.outputs.version }} completed'
-        webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-        fields: repo,message,commit,author
-      continue-on-error: true
