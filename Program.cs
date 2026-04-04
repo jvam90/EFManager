@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using var context = new AppDbContext();
 
-using var context = new AppDbContext();
-
-// Criar banco de dados se não existir e aplicar migrações
-context.Database.Migrate();
+// Criar banco de dados se não existir
+context.Database.EnsureCreated();
 
 var usuarios = context.Usuarios.ToList();
 
