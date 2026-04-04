@@ -7,16 +7,7 @@ permissions:
 
 on:
   push:
-    branches: [ main, master, develop ]
-    paths:
-      - '**.cs'
-      - '**.csproj'
-      - '.github/workflows/ci.yml'
   pull_request:
-    branches: [ main, master, develop ]
-    paths:
-      - '**.cs'
-      - '**.csproj'
   workflow_dispatch:
 
 env:
@@ -191,7 +182,6 @@ jobs:
   docker:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     needs: [build-and-test]
 
     steps:
@@ -221,7 +211,6 @@ jobs:
   deploy-railway:
     name: Deploy to Railway
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     needs: [docker]
 
     steps:
