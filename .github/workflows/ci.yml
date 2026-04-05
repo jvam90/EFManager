@@ -226,17 +226,17 @@ jobs:
 
     - name: Deploy to EC2
       run: |
-        ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+        ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
         cd ${{ secrets.EC2_APP_DIR }}
         docker-compose pull
         docker-compose up -d
-        echo "✅ Deployment completed successfully"
+        echo "Deployment completed successfully"
         EOF
 
     - name: Verify deployment
       run: |
-        ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-        docker ps --filter 'ancestor=${{ secrets.DOCKERHUB_USERNAME }}/efmanager:latest' --format 'table {{.ID}}\t{{.Status}}'
+        ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+        docker ps --filter "ancestor=${{ secrets.DOCKERHUB_USERNAME }}/efmanager:latest" --format "table {{.ID}}\t{{.Status}}"
         EOF
 
     - name: Cleanup SSH key
