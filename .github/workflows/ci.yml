@@ -237,6 +237,10 @@ jobs:
         fi
 
         cd "$EC2_APP_DIR"
+        echo "Current directory: \$(pwd)"
+        echo "Files in directory:"
+        ls -la
+
         docker-compose pull
         docker-compose up -d
         SSHEOF
