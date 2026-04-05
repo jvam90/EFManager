@@ -208,8 +208,8 @@ jobs:
         cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/efmanager:buildcache
         cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/efmanager:buildcache,mode=max
 
-  deploy-railway:
-    name: Deploy to Railway
+  deploy-ec2:
+    name: Deploy to EC2
     runs-on: ubuntu-latest
     needs: [docker]
 
@@ -217,22 +217,37 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Deploy to Railway
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+    - name: Create SSH key file
       run: |
-        npm install -g @railway/cli
-        echo "Token check:"
-        railway whoami
-        railway link --project $RAILWAY_PROJECT_ID
-        railway up
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+    - name: Deploy to EC2
+      run: |
+        ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+        cd ${{ secrets.EC2_APP_DIR }}
+        docker-compose pull
+        docker-compose up -d
+        echo "✅ Deployment completed successfully"
+        EOF
+
+    - name: Verify deployment
+      run: |
+        ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+        docker ps --filter "ancestor=${{ secrets.DOCKERHUB_USERNAME }}/efmanager:latest" --format "table {{.ID}}\t{{.Status}}"
+        EOF
+
+    - name: Cleanup SSH key
+      if: always()
+      run: rm -f ~/.ssh/deploy_key
 
   final-status:
     name: Final Status
     runs-on: ubuntu-latest
     if: always()
-    needs: [build-and-test, code-analysis, coverage, security-scan]
+    needs: [build-and-test, code-analysis, coverage, security-scan, deploy-ec2]
 
     steps:
     - name: Check build status
