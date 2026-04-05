@@ -258,7 +258,6 @@ jobs:
           sudo yum install -y docker
           sudo systemctl start docker
           sudo systemctl enable docker
-          sudo usermod -aG docker $USER
         fi
 
         if ! command -v docker-compose &> /dev/null; then
@@ -267,13 +266,16 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
         fi
 
+        # Set app directory with fallback
+        APP_DIR="${EC2_APP_DIR:-.}"
+        echo "Using app directory: $APP_DIR"
+
         # Create app directory if it doesn't exist
-        mkdir -p "$EC2_APP_DIR"
-        cd "$EC2_APP_DIR"
+        sudo mkdir -p "$APP_DIR"
+        cd "$APP_DIR"
 
         # Create docker-compose.yml
         cat > docker-compose.yml << 'COMPOSEOF'
-        version: '3.8'
         services:
           efmanager:
             image: DOCKERHUB_USERNAME/efmanager:latest
@@ -289,12 +291,12 @@ jobs:
         sed -i "s|DOCKERHUB_USERNAME|$DOCKERHUB_USERNAME|g" docker-compose.yml
 
         echo "Starting application..."
-        docker-compose pull
-        docker-compose up -d
+        sudo docker-compose pull
+        sudo docker-compose up -d
 
         echo "Deployment completed successfully"
         echo "Running containers:"
-        docker ps
+        sudo docker ps
         SSHEOF
 
     - name: Cleanup SSH key
