@@ -212,25 +212,23 @@ jobs:
     name: Deploy to EC2
     runs-on: ubuntu-latest
     needs: [docker]
+    env:
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      EC2_USER: ${{ secrets.EC2_USER }}
+      EC2_APP_DIR: ${{ secrets.EC2_APP_DIR }}
+      EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Create SSH key file
+    - name: Setup SSH key
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+        echo "$EC2_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+        ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
 
-    - name: Deploy to EC2
+    - name: Deploy Docker Compose
       run: |
-        ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOFSCRIPT'
-        cd ${{ secrets.EC2_APP_DIR }}
-        docker-compose pull
-        docker-compose up -d
-        EOFSCRIPT
+        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$EC2_USER@$EC2_HOST" "cd $EC2_APP_DIR && docker-compose pull && docker-compose up -d"
 
     - name: Cleanup SSH key
       if: always()
