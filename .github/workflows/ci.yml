@@ -228,7 +228,11 @@ jobs:
 
     - name: Deploy Docker Compose
       run: |
-        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$EC2_USER@$EC2_HOST" "cd $EC2_APP_DIR && docker-compose pull && docker-compose up -d"
+        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$EC2_USER@$EC2_HOST" << SSHEOF
+        cd "$EC2_APP_DIR"
+        docker-compose pull
+        docker-compose up -d
+        SSHEOF
 
     - name: Cleanup SSH key
       if: always()
