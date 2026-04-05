@@ -229,6 +229,13 @@ jobs:
     - name: Deploy Docker Compose
       run: |
         ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$EC2_USER@$EC2_HOST" << SSHEOF
+        # Install docker-compose if not present
+        if ! command -v docker-compose &> /dev/null; then
+          echo "Installing docker-compose..."
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+        fi
+
         cd "$EC2_APP_DIR"
         docker-compose pull
         docker-compose up -d
