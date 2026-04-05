@@ -236,7 +236,7 @@ jobs:
     - name: Verify deployment
       run: |
         ssh -i ~/.ssh/deploy_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-        docker ps --filter "ancestor=${{ secrets.DOCKERHUB_USERNAME }}/efmanager:latest" --format "table {{.ID}}\t{{.Status}}"
+        docker ps --filter 'ancestor=${{ secrets.DOCKERHUB_USERNAME }}/efmanager:latest' --format 'table {{.ID}}\t{{.Status}}'
         EOF
 
     - name: Cleanup SSH key
