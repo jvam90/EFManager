@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EFManager")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ea6851268f58cbbdc5a3a3c50cebefc5cbf91fd4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+242e9f6404e65ff193e2cd4e4289e3d8e3e660cb")]
 [assembly: System.Reflection.AssemblyProductAttribute("EFManager")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EFManager")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
