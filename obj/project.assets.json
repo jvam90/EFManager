@@ -3833,31 +3833,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\casa\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "/Users/jvam90/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\casa\\Documents\\projetos\\EFManager\\EFManager.csproj",
+      "projectUniqueName": "/Users/jvam90/Documents/EFManager/EFManager.csproj",
       "projectName": "EFManager",
-      "projectPath": "C:\\Users\\casa\\Documents\\projetos\\EFManager\\EFManager.csproj",
-      "packagesPath": "C:\\Users\\casa\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\casa\\Documents\\projetos\\EFManager\\obj\\",
+      "projectPath": "/Users/jvam90/Documents/EFManager/EFManager.csproj",
+      "packagesPath": "/Users/jvam90/.nuget/packages/",
+      "outputPath": "/Users/jvam90/Documents/EFManager/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\casa\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/Users/jvam90/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -3934,7 +3927,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.200/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.201/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",
