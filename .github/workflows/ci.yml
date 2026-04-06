@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOTNET_VERSION: '10.0.x'
+  DOTNET_VERSION: "10.0.x"
   CONFIGURATION: Release
 
 jobs:
@@ -24,113 +24,113 @@ jobs:
       fail-fast: false
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-        cache: true
-        cache-dependency-path: '**/packages.lock.json'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Build project
-      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
+      - name: Build project
+        run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
 
-    - name: Run tests
-      run: dotnet test --configuration ${{ env.CONFIGURATION }} --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+      - name: Run tests
+        run: dotnet test --configuration ${{ env.CONFIGURATION }} --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
 
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results-${{ matrix.os }}
-        path: '**/test-results.trx'
-        retention-days: 30
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.os }}
+          path: "**/test-results.trx"
+          retention-days: 30
 
   code-analysis:
     name: Code Analysis
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Analyze code style
-      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore -p:EnforceCodeStyleInBuild=true
-      continue-on-error: true
+      - name: Analyze code style
+        run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore -p:EnforceCodeStyleInBuild=true
+        continue-on-error: true
 
-    - name: Check for code analysis issues
-      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore -p:EnableNETAnalyzers=true
-      continue-on-error: true
+      - name: Check for code analysis issues
+        run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore -p:EnableNETAnalyzers=true
+        continue-on-error: true
 
   coverage:
     name: Code Coverage Report
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-        cache: true
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Install coverage tool
-      run: dotnet tool install --global dotnet-coverage
+      - name: Install coverage tool
+        run: dotnet tool install --global dotnet-coverage
 
-    - name: Run tests with coverage
-      run: |
-        dotnet test --configuration ${{ env.CONFIGURATION }} \
-          --no-restore \
-          --logger "console;verbosity=minimal" \
-          --collect:"XPlat Code Coverage" \
-          --results-directory ./coverage
-      continue-on-error: true
+      - name: Run tests with coverage
+        run: |
+          dotnet test --configuration ${{ env.CONFIGURATION }} \
+            --no-restore \
+            --logger "console;verbosity=minimal" \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./coverage
+        continue-on-error: true
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      if: always()
-      with:
-        file: ./coverage/**/coverage.cobertura.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
-        token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: ./coverage/**/coverage.cobertura.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
 
-    - name: Generate coverage report
-      run: dotnet coverage merge ./coverage/**/*.cobertura.xml --output coverage.cobertura.xml --output-format cobertura
-      continue-on-error: true
+      - name: Generate coverage report
+        run: dotnet coverage merge ./coverage/**/*.cobertura.xml --output coverage.cobertura.xml --output-format cobertura
+        continue-on-error: true
 
-    - name: Upload coverage artifact
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: coverage-report
-        path: coverage/
-        retention-days: 30
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
 
   test-report:
     name: Test Report
@@ -139,45 +139,45 @@ jobs:
     needs: build-and-test
 
     steps:
-    - name: Download test results
-      uses: actions/download-artifact@v4
-      with:
-        path: test-results
-        pattern: test-results-*
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          path: test-results
+          pattern: test-results-*
 
-    - name: Publish test results
-      uses: EnricoMi/publish-unit-test-result-action@v2
-      if: always()
-      with:
-        files: test-results/**/*.trx
-        check_name: Test Results
-        compare_to_earlier_commit: true
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: test-results/**/*.trx
+          check_name: Test Results
+          compare_to_earlier_commit: true
 
   security-scan:
     name: Security Scanning
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Run security analyzers
-      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore -p:TreatWarningsAsErrors=false
-      continue-on-error: true
+      - name: Run security analyzers
+        run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore -p:TreatWarningsAsErrors=false
+        continue-on-error: true
 
-    - name: Check for vulnerable packages
-      run: dotnet list package --vulnerable
-      continue-on-error: true
+      - name: Check for vulnerable packages
+        run: dotnet list package --vulnerable
+        continue-on-error: true
 
   docker:
     name: Build and Push Docker Image
@@ -185,28 +185,28 @@ jobs:
     needs: [build-and-test]
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: |
-          ${{ secrets.DOCKERHUB_USERNAME }}/efmanager:latest
-          ${{ secrets.DOCKERHUB_USERNAME }}/efmanager:${{ github.sha }}
-        cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/efmanager:buildcache
-        cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/efmanager:buildcache,mode=max
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/efmanager:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/efmanager:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/efmanager:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/efmanager:buildcache,mode=max
 
   deploy-ec2:
     name: Deploy to EC2
@@ -221,88 +221,88 @@ jobs:
       DOCKER_IMAGE_TAG: ${{ github.sha }}
 
     steps:
-    - name: "⚠️ Print Secrets (REMOVE AFTER SAVING)"
-      run: |
-        echo "=========================================="
-        echo "SALVE ESSES VALORES EM UM LOCAL SEGURO!"
-        echo "=========================================="
-        echo ""
-        echo "EC2_HOST: $EC2_HOST"
-        echo "EC2_USER: $EC2_USER"
-        echo "EC2_APP_DIR: $EC2_APP_DIR"
-        echo "DOCKERHUB_USERNAME: $DOCKERHUB_USERNAME"
-        echo ""
-        echo "EC2_SSH_PRIVATE_KEY:"
-        echo "---BEGIN---"
-        echo "$EC2_SSH_PRIVATE_KEY"
-        echo "---END---"
-        echo ""
-        echo "=========================================="
-        echo "REMOVA ESTE STEP DO WORKFLOW APÓS SALVAR!"
-        echo "=========================================="
+      - name: "⚠️ Print Secrets (REMOVE AFTER SAVING)"
+        run: |
+          echo "=========================================="
+          echo "SALVE ESSES VALORES EM UM LOCAL SEGURO!"
+          echo "=========================================="
+          echo ""
+          echo "EC2_HOST: $EC2_HOST"
+          echo "EC2_USER: $EC2_USER"
+          echo "EC2_APP_DIR: $EC2_APP_DIR"
+          echo "DOCKERHUB_USERNAME: $DOCKERHUB_USERNAME"
+          echo ""
+          echo "EC2_SSH_PRIVATE_KEY:"
+          echo "---BEGIN---"
+          echo "$EC2_SSH_PRIVATE_KEY"
+          echo "---END---"
+          echo ""
+          echo "=========================================="
+          echo "REMOVA ESTE STEP DO WORKFLOW APÓS SALVAR!"
+          echo "=========================================="
 
-    - name: Setup SSH key
-      run: |
-        mkdir -p ~/.ssh
-        echo "$EC2_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-        chmod 600 ~/.ssh/deploy_key
-        ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "$EC2_SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
 
-    - name: Deploy Docker Compose
-      run: |
-        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$EC2_USER@$EC2_HOST" << 'SSHEOF'
-        # Install docker and docker-compose if not present
-        if ! command -v docker &> /dev/null; then
-          echo "Installing Docker..."
-          sudo apt-get update -y
-          sudo apt-get install -y docker.io
-          sudo systemctl start docker
-          sudo systemctl enable docker
-          sudo usermod -aG docker "$USER"
-        fi
+      - name: Deploy Docker Compose
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$EC2_USER@$EC2_HOST" << 'SSHEOF'
+          # Install docker and docker-compose if not present
+          if ! command -v docker &> /dev/null; then
+            echo "Installing Docker..."
+            sudo apt-get update -y
+            sudo apt-get install -y docker.io
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            sudo usermod -aG docker "$USER"
+          fi
 
-        if ! command -v docker-compose &> /dev/null; then
-          echo "Installing docker-compose..."
-          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-        fi
+          if ! command -v docker-compose &> /dev/null; then
+            echo "Installing docker-compose..."
+            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+          fi
 
-        # Set app directory with fallback
-        APP_DIR="${EC2_APP_DIR:-.}"
-        echo "Using app directory: $APP_DIR"
+          # Set app directory with fallback
+          APP_DIR="${EC2_APP_DIR:-.}"
+          echo "Using app directory: $APP_DIR"
 
-        # Create app directory if it doesn't exist
-        sudo mkdir -p "$APP_DIR"
-        cd "$APP_DIR"
+          # Create app directory if it doesn't exist
+          sudo mkdir -p "$APP_DIR"
+          cd "$APP_DIR"
 
-        # Create docker-compose.yml
-        cat > docker-compose.yml << 'COMPOSEOF'
-        services:
-          efmanager:
-            image: DOCKERHUB_USERNAME/efmanager:latest
-            container_name: efmanager
-            ports:
-              - "80:8080"
-            restart: unless-stopped
-            environment:
-              - ASPNETCORE_ENVIRONMENT=Production
-        COMPOSEOF
+          # Create docker-compose.yml
+          cat > docker-compose.yml << 'COMPOSEOF'
+          services:
+            efmanager:
+              image: ${DOCKERHUB_USERNAME}/efmanager:latest
+              container_name: efmanager
+              ports:
+                - "80:8080"
+              restart: unless-stopped
+              environment:
+                - ASPNETCORE_ENVIRONMENT=Production
+          COMPOSEOF
 
-        # Replace placeholder with actual username
-        sed -i "s|DOCKERHUB_USERNAME|$DOCKERHUB_USERNAME|g" docker-compose.yml
+          # Replace placeholder with actual username
+          sed -i "s|DOCKERHUB_USERNAME|$DOCKERHUB_USERNAME|g" docker-compose.yml
 
-        echo "Starting application..."
-        sudo docker-compose pull
-        sudo docker-compose up -d
+          echo "Starting application..."
+          sudo docker-compose pull
+          sudo docker-compose up -d
 
-        echo "Deployment completed successfully"
-        echo "Running containers:"
-        sudo docker ps
-        SSHEOF
+          echo "Deployment completed successfully"
+          echo "Running containers:"
+          sudo docker ps
+          SSHEOF
 
-    - name: Cleanup SSH key
-      if: always()
-      run: rm -f ~/.ssh/deploy_key
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
 
   final-status:
     name: Final Status
@@ -311,10 +311,10 @@ jobs:
     needs: [build-and-test, code-analysis, coverage, security-scan, deploy-ec2]
 
     steps:
-    - name: Check build status
-      run: |
-        if [ "${{ needs.build-and-test.result }}" != "success" ]; then
-          echo "❌ Build or Tests failed"
-          exit 1
-        fi
-        echo "✅ All checks passed"
+      - name: Check build status
+        run: |
+          if [ "${{ needs.build-and-test.result }}" != "success" ]; then
+            echo "❌ Build or Tests failed"
+            exit 1
+          fi
+          echo "✅ All checks passed"
