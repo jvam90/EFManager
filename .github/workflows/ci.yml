@@ -188,6 +188,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -256,10 +262,10 @@ jobs:
           cd "$APP_DIR"
 
           # Create docker-compose.yml
-          cat > docker-compose.yml << 'COMPOSEOF'
+          cat > docker-compose.yml << COMPOSEOF
           services:
             efmanager:
-              image: ${DOCKERHUB_USERNAME}/efmanager:latest
+              image: $DOCKERHUB_USERNAME/efmanager:latest
               container_name: efmanager
               ports:
                 - "80:8080"
@@ -267,9 +273,6 @@ jobs:
               environment:
                 - ASPNETCORE_ENVIRONMENT=Production
           COMPOSEOF
-
-          # Replace placeholder with actual username
-          sed -i "s|DOCKERHUB_USERNAME|$DOCKERHUB_USERNAME|g" docker-compose.yml
 
           echo "Starting application..."
           sudo docker-compose pull
